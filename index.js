@@ -73,7 +73,7 @@ function getAccess(access) {
         managedRouter.addRoute(`/${repo.name}/`, handler.getRouter());
     });
 
-    app.listen(3000, () => {
-        logger.info("Server is running on port 3000");
+    app.listen(process.env.PORT || 3000, () => {
+        logger.info("Server is running on port " + (process.env.PORT || 3000));
     });
 })();
