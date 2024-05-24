@@ -6,6 +6,7 @@ const ManagedRouter = require("./ManagedRouter");
 const Database = require("./Database");
 const Log4js = require("log4js");
 const PublicAccess = require("./access/PublicAccess");
+const TokenAccess = require("./access/TokenAccess");
 const logger = Log4js.getLogger("Main");
 
 Log4js.configure({
@@ -29,10 +30,10 @@ function getStorage(storage) {
     }
 }
 
-function getHandler(handler, storage, access) {
+function getHandler(handler, name, storage, access) {
     switch (handler.type) {
         case "jetbrains":
-            return new JetBrainsPlugin(storage, access);
+            return new JetBrainsPlugin(name, storage, access);
         default:
             logger.error(`Unknown handler type: ${handler.type}`);
     }
@@ -42,6 +43,8 @@ function getAccess(access) {
     switch (access.type) {
         case "public":
             return new PublicAccess();
+        case "token":
+            return new TokenAccess(access.name);
         default:
             logger.error(`Unknown access type: ${access.type}`);
     }
@@ -66,7 +69,7 @@ function getAccess(access) {
         logger.debug(`Starting repo: ${repo.name}`);
         let storage = getStorage(repo.storage);
         let access = getAccess(repo.access);
-        let handler = getHandler(repo.handler, storage, access);
+        let handler = getHandler(repo.handler, repo.name, storage, access);
         managedRouter.addRoute(`/${repo.name}/`, handler.getRouter());
     });
 

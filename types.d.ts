@@ -32,3 +32,19 @@ export class Access {
     canWrite(req: Express.Request): Promise<boolean>;
     canRead(req: Express.Request): Promise<boolean>;
 }
+
+export class Token {
+    id: string;
+    token: string;
+    repo: string;
+    can_read: boolean;
+    can_write: boolean;
+}
+
+export class Package {
+    id: string;
+    name: string;
+    repo: string;
+    version: string;
+    payload: {[key: string]: any};
+}
