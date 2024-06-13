@@ -1,12 +1,15 @@
 const Express = require("express");
 const Morgan = require("morgan");
 const JetBrainsPlugin = require("./handlers/JetBrainsPlugin")
+const MavenRepo = require("./handlers/MavenRepo");
 const DirectoryStorage = require("./storage/DirectoryStorage");
 const ManagedRouter = require("./ManagedRouter");
 const Database = require("./Database");
 const Log4js = require("log4js");
 const PublicAccess = require("./access/PublicAccess");
 const TokenAccess = require("./access/TokenAccess");
+const AnonymousReadAccess = require("./access/AnonymousReadAccess");
+const BasicAccess = require("./access/BasicAccess");
 const logger = Log4js.getLogger("Main");
 
 Log4js.configure({
@@ -34,6 +37,8 @@ function getHandler(handler, name, storage, access) {
     switch (handler.type) {
         case "jetbrains":
             return new JetBrainsPlugin(name, storage, access);
+        case "maven":
+            return new MavenRepo(name, storage, access);
         default:
             logger.error(`Unknown handler type: ${handler.type}`);
     }
@@ -45,6 +50,10 @@ function getAccess(access) {
             return new PublicAccess();
         case "token":
             return new TokenAccess(access.name);
+        case "anonymous":
+            return new AnonymousReadAccess(getAccess(access.access));
+        case "basic":
+            return new BasicAccess(access.name);
         default:
             logger.error(`Unknown access type: ${access.type}`);
     }

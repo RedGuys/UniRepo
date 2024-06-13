@@ -37,6 +37,7 @@ module.exports = class Database {
                     primary key,
                 token     text,
                 repo      text,
+                name      text default '',
                 can_read  boolean default true,
                 can_write boolean default false
             );`);
