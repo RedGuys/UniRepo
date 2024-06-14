@@ -4,23 +4,23 @@ const Router = require('express').Router;
 const XMLUtils = require('../utils/XMLUtils');
 const TokenAccess = require("../access/TokenAccess");
 const Database = require("../Database");
+const axios = require("axios");
 
 module.exports = class MavenRepo {
     /**
+     *
+     * @param url {string}
      * @param storage {Types.Storage}
      * @param access {Types.Access}
      */
-    constructor(storage, access) {
+    constructor(url, storage, access) {
+        if(!url.endsWith("/")) {
+            url += "/";
+        }
         let router = Router();
 
         router.put("*", async (req, res, next) => {
-            if (!await access.canWrite(req)) {
-                res.status(403).send("Forbidden");
-                return;
-            }
-            res.status(100)
-            storage.writeFile(req.path.substring(1), req.read(req.readableLength));
-            res.status(200).send("OK");
+            res.status(405).send("Method Not Allowed")
         });
         router.get("*", async (req, res, next) => {
             if (!await access.canRead(req)) {
@@ -31,7 +31,18 @@ module.exports = class MavenRepo {
                 let file = storage.readFile(req.path.substring(1));
                 res.status(200).send(file);
             } else {
-                res.status(404).send("Not found");
+                //res.status(404).send("Not found");
+                let reqUrl = `${url}${req.path.substring(1)}`;
+                try {
+                    let response = await axios.get(reqUrl);
+                    res.status(200);
+                    let data = response.data;
+                    storage.writeFile(req.path.substring(1), data);
+                    res.send(data);
+                } catch (e) {
+                    res.status(404).send("Not found");
+                    return;
+                }
             }
         });
         router.delete("*", async (req, res, next) => {

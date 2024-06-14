@@ -2,6 +2,7 @@ const Express = require("express");
 const Morgan = require("morgan");
 const JetBrainsPlugin = require("./handlers/JetBrainsPlugin")
 const MavenRepo = require("./handlers/MavenRepo");
+const MavenProxy = require("./handlers/MavenProxy");
 const DirectoryStorage = require("./storage/DirectoryStorage");
 const ManagedRouter = require("./ManagedRouter");
 const Database = require("./Database");
@@ -19,7 +20,7 @@ Log4js.configure({
     categories: {
         default: {
             appenders: ["std"],
-            level: process.env.VERBOSE?"debug":"info"
+            level: process.env.VERBOSE ? "debug" : "info"
         }
     }
 });
@@ -38,7 +39,9 @@ function getHandler(handler, name, storage, access) {
         case "jetbrains":
             return new JetBrainsPlugin(name, storage, access);
         case "maven":
-            return new MavenRepo(name, storage, access);
+            return new MavenRepo(storage, access);
+        case "maven-proxy":
+            return new MavenProxy(handler.url, storage, access);
         default:
             logger.error(`Unknown handler type: ${handler.type}`);
     }
@@ -74,7 +77,7 @@ function getAccess(access) {
 
     let repositories = await db.getRepositories();
     repositories.forEach((repo) => {
-        if(repo.status !== "active") return;
+        if (repo.status !== "active") return;
         logger.debug(`Starting repo: ${repo.name}`);
         let storage = getStorage(repo.storage);
         let access = getAccess(repo.access);
