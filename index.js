@@ -3,6 +3,7 @@ const Morgan = require("morgan");
 const JetBrainsPlugin = require("./handlers/JetBrainsPlugin")
 const MavenRepo = require("./handlers/MavenRepo");
 const MavenProxy = require("./handlers/MavenProxy");
+const TileProxy = require("./handlers/TileProxy");
 const DirectoryStorage = require("./storage/DirectoryStorage");
 const ManagedRouter = require("./ManagedRouter");
 const Database = require("./Database");
@@ -42,6 +43,8 @@ function getHandler(handler, name, storage, access) {
             return new MavenRepo(storage, access);
         case "maven-proxy":
             return new MavenProxy(handler.url, storage, access);
+        case "tile-proxy":
+            return new TileProxy(handler.url, storage, access);
         default:
             logger.error(`Unknown handler type: ${handler.type}`);
     }
