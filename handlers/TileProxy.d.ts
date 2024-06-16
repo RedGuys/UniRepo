@@ -1,5 +1,6 @@
 import {Access, Handler, Storage} from "../types";
-import {Router} from "express";
+import {Express, Router} from "express";
+import * as Buffer from "node:buffer";
 
 export default class MavenProxy implements Handler {
     type: "tile-proxy";
@@ -7,4 +8,6 @@ export default class MavenProxy implements Handler {
     constructor(url: string, storage: Storage, access: Access);
 
     getRouter(): Router;
+
+    getFile(req: Express.Request): Promise<Buffer | null>;
 }

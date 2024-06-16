@@ -19,6 +19,10 @@ module.exports = class MavenRepo {
         }
         let router = Router();
 
+        this.url = url;
+        this.storage = storage;
+        this.access = access;
+
         router.put("*", async (req, res, next) => {
             res.status(405).send("Method Not Allowed")
         });
@@ -31,22 +35,11 @@ module.exports = class MavenRepo {
                 res.status(403).send("Forbidden");
                 return;
             }
-            if (storage.exists(req.path.substring(1))) {
-                let file = storage.readFile(req.path.substring(1));
-                res.status(200).header("content-type","image/png").send(file);
+            let file = await this.getFile(req);
+            if (file) {
+                res.status(200).header("content-type", "image/png").send(file);
             } else {
-                //res.status(404).send("Not found");
-                let reqUrl = `${url}${req.path.substring(1)}`;
-                try {
-                    let response = await axios.get(reqUrl,{responseType: 'arraybuffer'});
-                    res.status(200);
-                    let data = response.data;
-                    storage.writeFile(req.path.substring(1), data);
-                    res.header("content-type","image/png").send(data);
-                } catch (e) {
-                    res.status(404).send("Not found");
-                    return;
-                }
+                res.status(404).send("Not found");
             }
         });
         router.delete("*", async (req, res, next) => {
@@ -63,6 +56,22 @@ module.exports = class MavenRepo {
         });
 
         this.router = router;
+    }
+
+    async getFile(req) {
+        if (this.storage.exists(req.path.substring(1))) {
+            return this.storage.readFile(req.path.substring(1));
+        } else {
+            let reqUrl = `${url}${req.path.substring(1)}`;
+            try {
+                let response = await axios.get(reqUrl,{responseType: 'arraybuffer'});
+                let data = response.data;
+                this.storage.writeFile(req.path.substring(1), data);
+                return data;
+            } catch (e) {
+                return null;
+            }
+        }
     }
 
     getRouter() {

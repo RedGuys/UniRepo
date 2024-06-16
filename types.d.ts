@@ -24,6 +24,7 @@ export class Handler {
     type: string;
 
     getRouter(): Router;
+    getFile(req: Express.Request): Promise<Buffer | null>;
 }
 
 export class Access {

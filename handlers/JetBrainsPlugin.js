@@ -15,6 +15,10 @@ module.exports = class JetBrainsPlugin {
     constructor(name, storage, access) {
         let router = Router();
 
+        this.name = name;
+        this.storage = storage;
+        this.access = access;
+
         router.use(Express.raw({type: "*/*", limit: Number.POSITIVE_INFINITY}));
         router.post("*", async (req, res, next) => {
             if (!await access.canWrite(req)) {
@@ -50,29 +54,8 @@ module.exports = class JetBrainsPlugin {
                 res.status(403).send("Forbidden");
                 return;
             }
-            if (req.path === "/updatePlugins.xml") {
-                let packages = await Database.getInstance().getRepositoryPackages(name);
-                let xml = {plugins: {plugin: []}};
-                for (let pack of packages) {
-                    let url = pack.payload.url;
-                    if(access instanceof TokenAccess) {
-                        url += `?token=${access.getActiveToken(req)}`;
-                    }
-                    xml.plugins.plugin.push({
-                        '$': {
-                            id: pack.name,
-                            url: url,
-                            version: pack.version
-                        },
-                        description: pack.payload.description,
-                        name: pack.payload.name
-                    });
-                }
-                res.status(200).send(await XMLUtils.buildObject(xml));
-                return;
-            }
-            if (storage.exists(req.path.substring(1))) {
-                let file = storage.readFile(req.path.substring(1));
+            let file = await this.getFile(req);
+            if (file) {
                 res.status(200).send(file);
             } else {
                 res.status(404).send("Not found");
@@ -92,6 +75,34 @@ module.exports = class JetBrainsPlugin {
         });
 
         this.router = router;
+    }
+
+    async getFile(req) {
+        if (req.path === "/updatePlugins.xml") {
+            let packages = await Database.getInstance().getRepositoryPackages(this.name);
+            let xml = {plugins: {plugin: []}};
+            for (let pack of packages) {
+                let url = pack.payload.url;
+                if(this.access instanceof TokenAccess) {
+                    url += `?token=${this.access.getActiveToken(req)}`;
+                }
+                xml.plugins.plugin.push({
+                    '$': {
+                        id: pack.name,
+                        url: url,
+                        version: pack.version
+                    },
+                    description: pack.payload.description,
+                    name: pack.payload.name
+                });
+            }
+            return await XMLUtils.buildObject(xml);
+        }
+        if (this.storage.exists(req.path.substring(1))) {
+            return this.storage.readFile(req.path.substring(1));
+        } else {
+            return null;
+        }
     }
 
     getRouter() {

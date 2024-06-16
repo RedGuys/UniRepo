@@ -9,17 +9,25 @@ module.exports = class ManagedRouter {
             let length = route.path.length;
             if(route.path.endsWith("/")) length--;
             req.url = req.url.substring(length);
-            route.handler(req, res, next);
+            route.route(req, res, next);
         } else {
             next();
         }
     }
 
     addRoute(path, handler) {
-        this.routes.push({path, handler});
+        this.routes.push({path, handler, route: handler.getRouter()});
     }
 
     removeRoute(path) {
         this.routes = this.routes.filter((route) => route.path !== path);
+    }
+
+    getHandler(path) {
+        let route = this.routes.find((route) => route.path.startsWith("/"+path+"/"));
+        if(route) {
+            return route.handler;
+        }
+        return null;
     }
 }

@@ -4,6 +4,7 @@ const JetBrainsPlugin = require("./handlers/JetBrainsPlugin")
 const MavenRepo = require("./handlers/MavenRepo");
 const MavenProxy = require("./handlers/MavenProxy");
 const TileProxy = require("./handlers/TileProxy");
+const GroupRepo = require("./handlers/GroupRepo");
 const DirectoryStorage = require("./storage/DirectoryStorage");
 const ManagedRouter = require("./ManagedRouter");
 const Database = require("./Database");
@@ -30,21 +31,25 @@ function getStorage(storage) {
     switch (storage.type) {
         case "directory":
             return new DirectoryStorage(storage.path);
+        case "disabled":
+            return null;
         default:
             logger.error(`Unknown storage type: ${storage.type}`);
     }
 }
 
-function getHandler(handler, name, storage, access) {
+function getHandler(handler, adds, storage, access) {
     switch (handler.type) {
         case "jetbrains":
-            return new JetBrainsPlugin(name, storage, access);
+            return new JetBrainsPlugin(adds.name, storage, access);
         case "maven":
             return new MavenRepo(storage, access);
         case "maven-proxy":
             return new MavenProxy(handler.url, storage, access);
         case "tile-proxy":
             return new TileProxy(handler.url, storage, access);
+        case "group":
+            return new GroupRepo(adds.managedRouter, handler.repos, storage, access);
         default:
             logger.error(`Unknown handler type: ${handler.type}`);
     }
@@ -84,8 +89,8 @@ function getAccess(access) {
         logger.debug(`Starting repo: ${repo.name}`);
         let storage = getStorage(repo.storage);
         let access = getAccess(repo.access);
-        let handler = getHandler(repo.handler, repo.name, storage, access);
-        managedRouter.addRoute(`/${repo.name}/`, handler.getRouter());
+        let handler = getHandler(repo.handler, {name:repo.name, managedRouter}, storage, access);
+        managedRouter.addRoute(`/${repo.name}/`, handler);
     });
 
     app.listen(process.env.PORT || 3000, () => {

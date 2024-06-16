@@ -13,6 +13,9 @@ module.exports = class MavenRepo {
     constructor(storage, access) {
         let router = Router();
 
+        this.storage = storage;
+        this.access = access;
+
         router.put("*", async (req, res, next) => {
             if (!await access.canWrite(req)) {
                 res.status(403).send("Forbidden");
@@ -27,8 +30,8 @@ module.exports = class MavenRepo {
                 res.status(403).send("Forbidden");
                 return;
             }
-            if (storage.exists(req.path.substring(1))) {
-                let file = storage.readFile(req.path.substring(1));
+            let file = await this.getFile(req);
+            if (file) {
                 res.status(200).send(file);
             } else {
                 res.status(404).send("Not found");
@@ -48,6 +51,13 @@ module.exports = class MavenRepo {
         });
 
         this.router = router;
+    }
+
+    async getFile(req) {
+        if (this.storage.exists(req.path.substring(1))) {
+            return this.storage.readFile(req.path.substring(1));
+        }
+        return null;
     }
 
     getRouter() {

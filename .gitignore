@@ -1,6 +1,5 @@
 node_modules
 .idea
-idea
 connect.sh
 test.js
-maven
+repo

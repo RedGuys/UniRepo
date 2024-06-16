@@ -2,10 +2,10 @@ import {Access, Handler, Storage} from "../types";
 import {Express, Router} from "express";
 import * as Buffer from "node:buffer";
 
-export default class MavenProxy implements Handler {
-    type: "maven-proxy";
+export default class MavenRepo implements Handler {
+    type: "group";
 
-    constructor(url: string, storage: Storage, access: Access);
+    constructor(managedRouter: object, repos: string[], storage: Storage, access: Access);
 
     getRouter(): Router;
 
