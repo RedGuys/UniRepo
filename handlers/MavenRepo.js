@@ -21,9 +21,15 @@ module.exports = class MavenRepo {
                 res.status(403).send("Forbidden");
                 return;
             }
-            res.status(100)
-            storage.writeFile(req.path.substring(1), req.read(req.readableLength));
-            res.status(200).send("OK");
+            res.status(100);
+            let buffer = [];
+            req.on('data', (chunk) => {
+                buffer.push(chunk);
+            });
+            req.on('end', async () => {
+                await storage.writeFile(req.path.substring(1), Buffer.concat(buffer));
+                res.status(200).send("OK");
+            });
         });
         router.get("*", async (req, res, next) => {
             if (!await access.canRead(req)) {
