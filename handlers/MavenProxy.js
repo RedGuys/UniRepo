@@ -14,7 +14,7 @@ module.exports = class MavenRepo {
      * @param access {Types.Access}
      */
     constructor(url, storage, access) {
-        if(!url.endsWith("/")) {
+        if (!url.endsWith("/")) {
             url += "/";
         }
         let router = Router();
@@ -60,7 +60,7 @@ module.exports = class MavenRepo {
         } else {
             let reqUrl = `${this.url}${req.path.substring(1)}`;
             try {
-                let response = await axios.get(reqUrl);
+                let response = await axios.get(reqUrl, {responseType: "arraybuffer"});
                 let data = response.data;
                 this.storage.writeFile(req.path.substring(1), data);
                 return data;
