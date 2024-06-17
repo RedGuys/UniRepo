@@ -38,7 +38,13 @@ module.exports = class MavenRepo {
             }
             let file = await this.getFile(req);
             if (file) {
-                res.status(200).send(file);
+                res.status(200);
+                if(req.path.endsWith(".pom")) {
+                    res.header("content-type", "application/xml");
+                } else if(req.path.endsWith(".jar")) {
+                    res.header("content-type", "application/java-archive");
+                }
+                res.send(file);
             } else {
                 res.status(404).send("Not found");
             }
