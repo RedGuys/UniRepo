@@ -33,10 +33,12 @@ module.exports = class JetBrainsPlugin {
                 let newPackages = remotePackages.filter(rp => !localPackages.some(lp => lp.name === rp.$.id && lp.version === rp.$.version));
                 for (let newPackage of newPackages) {
                     let payload = {
-                        name: newPackage.name,
-                        description: newPackage.description,
                         url: newPackage.$.url
                     };
+                    for (let key of Object.keys(newPackage)) {
+                        if(key.startsWith("$")) continue;
+                        payload[key] = newPackage[key];
+                    }
                     await Database.getInstance().saveRepositoryPackage(name, newPackage.$.id, newPackage.$.version, payload);
                 }
                 res.status(200).send("OK");
@@ -86,14 +88,15 @@ module.exports = class JetBrainsPlugin {
                 if(this.access instanceof TokenAccess) {
                     url += `?token=${this.access.getActiveToken(req)}`;
                 }
+                let payloadCopy = Object.assign({}, pack.payload);
+                delete payloadCopy.url;
                 xml.plugins.plugin.push({
                     '$': {
                         id: pack.name,
                         url: url,
                         version: pack.version
                     },
-                    description: pack.payload.description,
-                    name: pack.payload.name
+                    ...payloadCopy
                 });
             }
             return await XMLUtils.buildObject(xml);
