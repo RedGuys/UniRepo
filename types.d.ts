@@ -16,6 +16,15 @@ export class Storage {
     readFile(path: string): Buffer;
     exists(path: string): boolean;
     deleteFile(path: string): void;
+    readMetadata(path: string): FileMetadata;
+    writeMetadata(path: string, data: FileMetadata): void;
+}
+
+export class FileMetadata {
+    created: number;
+    lastModified: number;
+    lastAccessed: number;
+    [key: string]: any;
 }
 
 export type Status = "active" | "disabled";

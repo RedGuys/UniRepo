@@ -1,4 +1,4 @@
-import {Storage} from "../types";
+import {FileMetadata, Storage} from "../types";
 
 export default class DirectoryStorage implements Storage {
     type: "directory";
@@ -13,4 +13,8 @@ export default class DirectoryStorage implements Storage {
     readFile(path: string): Buffer;
 
     writeFile(path: string, data: string | NodeJS.ArrayBufferView): void;
+
+    readMetadata(path: string): FileMetadata;
+
+    writeMetadata(path: string, data: FileMetadata): void;
 }
