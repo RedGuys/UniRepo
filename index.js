@@ -81,7 +81,7 @@ function getAccess(access) {
 
     logger.log("Init routes");
     let managedRouter = new ManagedRouter();
-    app.use(managedRouter.process.bind(managedRouter));
+    app.use("/repo/",managedRouter.process.bind(managedRouter));
 
     let repositories = await db.getRepositories();
     repositories.forEach((repo) => {

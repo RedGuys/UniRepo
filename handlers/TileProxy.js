@@ -62,7 +62,7 @@ module.exports = class MavenRepo {
         if (this.storage.exists(req.path.substring(1))) {
             return this.storage.readFile(req.path.substring(1));
         } else {
-            let reqUrl = `${url}${req.path.substring(1)}`;
+            let reqUrl = `${this.url}${req.path.substring(1)}`;
             try {
                 let response = await axios.get(reqUrl,{responseType: 'arraybuffer'});
                 let data = response.data;
