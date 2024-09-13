@@ -1,6 +1,6 @@
 {
   "name": "repo",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -16,6 +16,7 @@
     "log4js": "^6.9.1",
     "morgan": "^1.10.0",
     "pg": "^8.11.5",
+    "rgcache": "^1.1.4",
     "xml2js": "^0.6.2"
   }
 }

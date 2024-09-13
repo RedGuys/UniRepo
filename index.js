@@ -14,6 +14,7 @@ const TokenAccess = require("./access/TokenAccess");
 const AnonymousReadAccess = require("./access/AnonymousReadAccess");
 const BasicAccess = require("./access/BasicAccess");
 const logger = Log4js.getLogger("Main");
+const JetBrainsHubAccess = require("./access/JetbrainsHubAccess");
 
 Log4js.configure({
     appenders: {
@@ -65,6 +66,8 @@ function getAccess(access) {
             return new AnonymousReadAccess(getAccess(access.access));
         case "basic":
             return new BasicAccess(access.name);
+        case "jetbrains":
+            return new JetBrainsHubAccess(access.url, access.group);
         default:
             logger.error(`Unknown access type: ${access.type}`);
     }
@@ -81,7 +84,7 @@ function getAccess(access) {
 
     logger.log("Init routes");
     let managedRouter = new ManagedRouter();
-    app.use("/repo/",managedRouter.process.bind(managedRouter));
+    app.use("/repo/", managedRouter.process.bind(managedRouter));
 
     let repositories = await db.getRepositories();
     repositories.forEach((repo) => {
@@ -89,7 +92,7 @@ function getAccess(access) {
         logger.debug(`Starting repo: ${repo.name}`);
         let storage = getStorage(repo.storage);
         let access = getAccess(repo.access);
-        let handler = getHandler(repo.handler, {name:repo.name, managedRouter}, storage, access);
+        let handler = getHandler(repo.handler, {name: repo.name, managedRouter}, storage, access);
         managedRouter.addRoute(`/${repo.name}/`, handler);
     });
 
