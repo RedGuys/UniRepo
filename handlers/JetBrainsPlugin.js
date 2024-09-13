@@ -4,6 +4,7 @@ const Router = require('express').Router;
 const XMLUtils = require('../utils/XMLUtils');
 const TokenAccess = require("../access/TokenAccess");
 const Database = require("../Database");
+const JetbrainsHubAccess = require("../access/JetbrainsHubAccess");
 
 module.exports = class JetBrainsPlugin {
     /**
@@ -86,6 +87,9 @@ module.exports = class JetBrainsPlugin {
             for (let pack of packages) {
                 let url = pack.payload.url;
                 if(this.access instanceof TokenAccess) {
+                    url += `?token=${this.access.getActiveToken(req)}`;
+                }
+                if(this.access instanceof JetbrainsHubAccess) {
                     url += `?token=${this.access.getActiveToken(req)}`;
                 }
                 let payloadCopy = Object.assign({}, pack.payload);
