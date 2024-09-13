@@ -4,13 +4,17 @@ const axios = require("axios");
 module.exports = class TokenAccess {
     cache = new Cache.MemoryCache({
         ttl: 60000, loader: async (key) => {
-            let user = await axios.get(this.url+"/api/rest/users/me", {
-                headers: {
-                    Authorization: `Bearer ${key}`
-                }
-            });
-            let globalRole = user.data.groups.find(r => r.id === this.group);
-            return globalRole !== null;
+            try {
+                let user = await axios.get(this.url + "/api/rest/users/me", {
+                    headers: {
+                        Authorization: `Bearer ${key}`
+                    }
+                });
+                let globalRole = user.data.groups.find(r => r.id === this.group);
+                return globalRole !== null;
+            } catch (e) {
+                return false;
+            }
         }, thisArg: this
     })
 
