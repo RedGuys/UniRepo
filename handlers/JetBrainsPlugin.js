@@ -32,6 +32,8 @@ module.exports = class JetBrainsPlugin {
                 let localPackages = await Database.getInstance().getRepositoryPackages(name);
                 // Find new packages by comparing id and version
                 let newPackages = remotePackages.filter(rp => !localPackages.some(lp => lp.name === rp.$.id && lp.version === rp.$.version));
+                // clear duplicates
+                newPackages = newPackages.filter((v, i, a) => a.findIndex(t => (t.$.id === v.$.id && t.$.version === v.$.version)) === i);
                 for (let newPackage of newPackages) {
                     let payload = {
                         url: newPackage.$.url
